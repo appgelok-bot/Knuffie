@@ -17,7 +17,7 @@ import {
   subscribeToMoods, updateMoodInFirebase, subscribeToAuthChanges, 
   subscribeToUserProfile, subscribeToCoupleData, updateCoupleData,
   subscribeToPartnerProfile, updateUserPresence, saveDailyAnswer, subscribeToDailyAnswers,
-  subscribeToGame
+  subscribeToGame, updateUserProfileData
 } from './services/firebaseService';
 import { 
   Home, 
@@ -102,7 +102,9 @@ const App: React.FC = () => {
                     }));
                     setIsInitializing(false);
                   } else {
-                    setUserProfile({ uid: firebaseUser.uid, email: firebaseUser.email, displayName: firebaseUser.displayName || 'User', coupleId: null });
+                    const fallbackProfile = { uid: firebaseUser.uid, email: firebaseUser.email || '', displayName: firebaseUser.displayName || 'Gebruiker', coupleId: null, photoURL: firebaseUser.photoURL || null, lastSeen: Date.now() };
+                    setUserProfile(fallbackProfile);
+                    updateUserProfileData(firebaseUser.uid, fallbackProfile).catch(e => console.warn("Failed auto profile creation:", e));
                     setIsInitializing(false);
                   }
               });

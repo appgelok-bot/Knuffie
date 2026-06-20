@@ -60,7 +60,7 @@ try {
   console.warn("Firebase initialization failed:", e);
 }
 
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null, shouldThrow = true) {
   const currentUser = auth?.currentUser;
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
@@ -79,7 +79,9 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     path
   };
   console.error('Firestore Error Details: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  if (shouldThrow) {
+    throw new Error(JSON.stringify(errInfo));
+  }
 }
 
 // --- AUTH ---
@@ -97,7 +99,7 @@ export const subscribeToUserProfile = (uid: string, callback: (p: UserProfile | 
     if (docSnap.exists()) callback(docSnap.data() as UserProfile);
     else callback(null);
   }, (error) => {
-    handleFirestoreError(error, OperationType.GET, `users/${uid}`);
+    handleFirestoreError(error, OperationType.GET, `users/${uid}`, false);
   });
 };
 
@@ -128,7 +130,7 @@ export const subscribeToPartnerProfile = (coupleId: string, myUid: string, callb
         snapshot.forEach((doc) => { if (doc.id !== myUid) { callback(doc.data() as UserProfile); found = true; } });
         if (!found) callback(null);
     }, (error) => {
-        handleFirestoreError(error, OperationType.LIST, `users?coupleId=${coupleId}`);
+        handleFirestoreError(error, OperationType.LIST, `users?coupleId=${coupleId}`, false);
     });
 }
 
@@ -139,7 +141,7 @@ export const subscribeToCoupleData = (coupleId: string, cb: (d: CoupleData | nul
         if(s.exists()) cb(s.data() as CoupleData);
         else cb(null);
     }, (error) => {
-        handleFirestoreError(error, OperationType.GET, `couples/${coupleId}`);
+        handleFirestoreError(error, OperationType.GET, `couples/${coupleId}`, false);
     });
 }
 
@@ -162,7 +164,7 @@ export const subscribeToNotes = (coupleId: string, callback: (notes: StickyNote[
     notes.sort((a, b) => b.timestamp - a.timestamp);
     callback(notes);
   }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, `notes?coupleId=${coupleId}`);
+    handleFirestoreError(error, OperationType.LIST, `notes?coupleId=${coupleId}`, false);
   });
 };
 
@@ -216,7 +218,7 @@ export const subscribeToDailyAnswers = (coupleId: string, questionId: string, cb
         const answers = snapshot.docs.map(doc => doc.data() as DailyQuestionAnswer);
         cb(answers);
     }, (error) => {
-        handleFirestoreError(error, OperationType.LIST, `couples/${coupleId}/answers?questionId=${questionId}`);
+        handleFirestoreError(error, OperationType.LIST, `couples/${coupleId}/answers?questionId=${questionId}`, false);
     });
 };
 
@@ -228,7 +230,7 @@ export const subscribeToMoods = (coupleId: string, callback: (moods: MoodEntry[]
     const moods = snapshot.docs.map(doc => doc.data() as MoodEntry);
     callback(moods);
   }, (error) => {
-    handleFirestoreError(error, OperationType.LIST, `couples/${coupleId}/moods`);
+    handleFirestoreError(error, OperationType.LIST, `couples/${coupleId}/moods`, false);
   });
 };
 
@@ -260,7 +262,7 @@ export const subscribeToGameRequests = (coupleId: string, cb: (req: GameRequest 
     return onSnapshot(doc(db, "couples", coupleId, "game_data", "invite"), (s) => {
         cb(s.exists() ? s.data() as GameRequest : null);
     }, (error) => {
-        handleFirestoreError(error, OperationType.GET, path);
+        handleFirestoreError(error, OperationType.GET, path, false);
     });
 };
 
@@ -279,7 +281,7 @@ export const subscribeToGame = (coupleId: string, cb: (g: GameState | null) => v
     return onSnapshot(doc(db, "games", coupleId), (s) => {
         cb(s.exists() ? s.data() as GameState : null);
     }, (error) => {
-         handleFirestoreError(error, OperationType.GET, `games/${coupleId}`);
+         handleFirestoreError(error, OperationType.GET, `games/${coupleId}`, false);
     });
 }
 

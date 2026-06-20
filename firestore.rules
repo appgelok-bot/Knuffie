@@ -30,12 +30,10 @@ service cloud.firestore {
       allow list: if isSignedIn();
       
       allow create: if isSignedIn() 
-        && request.auth.uid == uid 
-        && incoming().uid == uid;
+        && request.auth.uid == uid;
         
       allow update: if isSignedIn() 
-        && request.auth.uid == uid
-        && incoming().uid == uid;
+        && request.auth.uid == uid;
     }
 
     // --- COUPLES COLLECTION ---
@@ -61,18 +59,7 @@ service cloud.firestore {
 
     // --- NOTES COLLECTION ---
     match /notes/{noteId} {
-      allow read, list: if isSignedIn()
-        && request.auth.uid in getCouple(resource.data.coupleId).members;
-        
-      allow create: if isSignedIn()
-        && request.auth.uid in getCouple(incoming().coupleId).members;
-        
-      allow update: if isSignedIn()
-        && request.auth.uid in getCouple(existing().coupleId).members
-        && request.auth.uid in getCouple(incoming().coupleId).members;
-        
-      allow delete: if isSignedIn()
-        && request.auth.uid in getCouple(existing().coupleId).members;
+      allow read, write: if isSignedIn();
     }
 
     // --- SUB-COLLECTIONS OF COUPLES ---
