@@ -1,0 +1,8 @@
+{
+  "name": "Knuffel Kompas",
+  "description": "Een gedeelde plek voor koppels om notities achter te laten, datums te plannen en liefde te tonen.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}

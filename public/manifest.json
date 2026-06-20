@@ -1,0 +1,25 @@
+{
+  "short_name": "KnuffelKompas",
+  "name": "Knuffel Kompas - Koppels App",
+  "description": "Een gedeelde plek voor koppels om dromen te delen, datums te plannen, liefde te tonen en spelletjes te spelen.",
+  "icons": [
+    {
+      "src": "/src/assets/images/love_compass_logo_1781963777674.jpg",
+      "type": "image/jpeg",
+      "sizes": "1024x1024",
+      "purpose": "any"
+    },
+    {
+      "src": "/src/assets/images/love_compass_logo_1781963777674.jpg",
+      "type": "image/jpeg",
+      "sizes": "1024x1024",
+      "purpose": "maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#1a050a",
+  "theme_color": "#3a0d1a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["social", "entertainment"]
+}
