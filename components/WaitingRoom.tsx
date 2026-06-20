@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Copy, Check, Loader2, Share2 } from 'lucide-react';
+import { Copy, Check, Loader2, Share2, LogOut } from 'lucide-react';
+import { logoutUser } from '../services/firebaseService';
 
 interface WaitingRoomProps {
   code: string;
@@ -8,6 +9,7 @@ interface WaitingRoomProps {
 
 const WaitingRoom: React.FC<WaitingRoomProps> = ({ code, onContinue }) => {
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const copyCode = () => {
     navigator.clipboard.writeText(code);
@@ -24,6 +26,14 @@ const WaitingRoom: React.FC<WaitingRoomProps> = ({ code, onContinue }) => {
       } else {
           copyCode();
       }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (e: any) {
+      setError(e.message || "Fout bij uitloggen");
+    }
   };
 
   return (
@@ -79,6 +89,17 @@ const WaitingRoom: React.FC<WaitingRoomProps> = ({ code, onContinue }) => {
                 className="text-white/20 hover:text-white/40 text-[10px] font-black uppercase tracking-widest transition-colors"
              >
                 Dashboard bekijken
+              </button>
+              <div className="pt-4 border-t border-white/5 flex flex-col items-center justify-center">
+                <button 
+                   onClick={handleLogout}
+                   className="text-rose-400/50 hover:text-rose-400 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 justify-center cursor-pointer select-none"
+                >
+                   <LogOut size={12} />
+                   Uitloggen
+                </button>
+              </div>
+              <button className="hidden">
              </button>
            </div>
        </div>

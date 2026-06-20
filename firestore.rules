@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Catch-all safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function getCouple(coupleId) {
+      return get(/databases/$(database)/documents/couples/$(coupleId)).data;
+    }
+
+    // --- USERS COLLECTION ---
+    match /users/{uid} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      
+      allow create: if isSignedIn() 
+        && request.auth.uid == uid 
+        && incoming().uid == uid;
+        
+      allow update: if isSignedIn() 
+        && request.auth.uid == uid
+        && incoming().uid == uid;
+    }
+
+    // --- COUPLES COLLECTION ---
+    match /couples/{coupleId} {
+      allow get: if isSignedIn();
+      
+      allow create: if isSignedIn()
+        && incoming().coupleId == coupleId
+        && incoming().members.size() == 1
+        && incoming().members[0] == request.auth.uid;
+        
+      allow update: if isSignedIn()
+        && (
+          // Case 1: Member of the couple updating metadata
+          (request.auth.uid in existing().members && incoming().members == existing().members) ||
+          // Case 2: New member joining an incomplete couple
+          (existing().members.size() == 1 
+            && incoming().members.size() == 2 
+            && incoming().members[0] == existing().members[0] 
+            && incoming().members[1] == request.auth.uid)
+        );
+    }
+
+    // --- NOTES COLLECTION ---
+    match /notes/{noteId} {
+      allow read, list: if isSignedIn()
+        && request.auth.uid in getCouple(resource.data.coupleId).members;
+        
+      allow create: if isSignedIn()
+        && request.auth.uid in getCouple(incoming().coupleId).members;
+        
+      allow update: if isSignedIn()
+        && request.auth.uid in getCouple(existing().coupleId).members
+        && request.auth.uid in getCouple(incoming().coupleId).members;
+        
+      allow delete: if isSignedIn()
+        && request.auth.uid in getCouple(existing().coupleId).members;
+    }
+
+    // --- SUB-COLLECTIONS OF COUPLES ---
+    match /couples/{coupleId}/answers/{answerId} {
+      allow read, list: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members;
+        
+      allow create, update: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members
+        && incoming().userId == request.auth.uid;
+    }
+
+    match /couples/{coupleId}/moods/{userId} {
+      allow read, list: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members;
+        
+      allow create, update: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members
+        && userId == request.auth.uid
+        && incoming().userId == request.auth.uid;
+    }
+
+    match /couples/{coupleId}/game_data/{docId} {
+      allow read, list, write: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members;
+    }
+
+    // --- GAMES COLLECTION (Rummikub match state cache) ---
+    match /games/{coupleId} {
+      allow read: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members;
+        
+      allow create, update, delete: if isSignedIn()
+        && request.auth.uid in getCouple(coupleId).members;
+    }
+  }
+}

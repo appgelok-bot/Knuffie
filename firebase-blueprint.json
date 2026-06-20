@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Individuele gebruikersprofielen gekoppeld aan de app.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "partnerNickname": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "coupleId": { "type": "string" },
+        "lastSeen": { "type": "number" }
+      },
+      "required": ["uid", "displayName"]
+    },
+    "CoupleData": {
+      "title": "CoupleData",
+      "description": "Gedeelde gegevens van de koppels, inclusief herdenkingsdata en dagelijkse vragen.",
+      "type": "object",
+      "properties": {
+        "coupleId": { "type": "string" },
+        "members": { "type": "array" },
+        "createdAt": { "type": "object" },
+        "anniversaryDate": { "type": "string" },
+        "proposedDate": { "type": "string" },
+        "proposedBy": { "type": "string" },
+        "status": { "type": "string", "enum": ["set", "pending", null] },
+        "dailyQuestion": { "type": "string" },
+        "dailyQuestionDate": { "type": "string" }
+      },
+      "required": ["coupleId", "members"]
+    },
+    "StickyNote": {
+      "title": "StickyNote",
+      "description": "Virtuele memo's of plaknotities die op het bord worden geplaatst.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "coupleId": { "type": "string" },
+        "content": { "type": "string" },
+        "color": { "type": "string" },
+        "author": { "type": "string" },
+        "authorPhoto": { "type": "string" },
+        "timestamp": { "type": "number" },
+        "rotation": { "type": "number" }
+      },
+      "required": ["coupleId", "content", "color", "author", "timestamp"]
+    },
+    "DailyQuestionAnswer": {
+      "title": "DailyQuestionAnswer",
+      "description": "Ingezonden antwoorden van partners op de dagelijkse vraag.",
+      "type": "object",
+      "properties": {
+        "questionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "answer": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["questionId", "userId", "userName", "answer", "timestamp"]
+    },
+    "MoodEntry": {
+      "title": "MoodEntry",
+      "description": "De huidige gemoedstoestand van een partner met datum en emoji.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "coupleId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "mood": { "type": "string" },
+        "label": { "type": "string" },
+        "timestamp": { "type": "number" }
+      },
+      "required": ["userId", "coupleId", "mood", "label", "timestamp"]
+    },
+    "GameRequest": {
+      "title": "GameRequest",
+      "description": "Uitnodigingen en status voor het spelen van minigames (zoals Rummikub).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fromUid": { "type": "string" },
+        "fromName": { "type": "string" },
+        "gameType": { "type": "string", "enum": ["rummikub"] },
+        "timestamp": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected"] }
+      },
+      "required": ["id", "fromUid", "fromName", "gameType", "timestamp", "status"]
+    },
+    "GameState": {
+      "title": "GameState",
+      "description": "De actieve Rummikub-spelstatus gedeeld tussen partners.",
+      "type": "object",
+      "properties": {
+        "gameActive": { "type": "boolean" },
+        "isPracticeMode": { "type": "boolean" },
+        "deck": { "type": "array" },
+        "board": { "type": "array" },
+        "player1": { "type": "object" },
+        "player2": { "type": "object" },
+        "currentTurnUid": { "type": "string" },
+        "turnStartTime": { "type": "number" },
+        "winner": { "type": "string" },
+        "lastUpdate": { "type": "number" }
+      },
+      "required": ["gameActive", "deck", "board", "player1", "player2", "currentTurnUid"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "UserProfile",
+      "description": "Profielinformatie per unieke gebruiker."
+    },
+    "/couples/{coupleId}": {
+      "schema": "CoupleData",
+      "description": "Hoofdgroep of koppelruimte informatie."
+    },
+    "/couples/{coupleId}/answers/{answerId}": {
+      "schema": "DailyQuestionAnswer",
+      "description": "Gedeelde antwoorden op dagelijkse vragen."
+    },
+    "/couples/{coupleId}/moods/{userId}": {
+      "schema": "MoodEntry",
+      "description": "Status-update of stemming van een gekoppelde gebruiker."
+    },
+    "/couples/{coupleId}/game_data/{docId}": {
+      "schema": "GameRequest",
+      "description": "Tijdelijke game verzoeken / uitnodigingen binnen de koppelruimte."
+    },
+    "/notes/{noteId}": {
+      "schema": "StickyNote",
+      "description": "Gedeeld prikbord plaknotities."
+    },
+    "/games/{coupleId}": {
+      "schema": "GameState",
+      "description": "Rummikub matchstatus gekoppeld aan de koppelcode."
+    }
+  }
+}
